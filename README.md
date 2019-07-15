@@ -1,6 +1,32 @@
-# pi-gen
+# pi-gen (for Pi-puck)
 
-_Tool used to create the raspberrypi.org Raspbian images_
+_Tool used to create Raspbian images for the Pi-puck_
+
+See the README at https://github.com/yorkrobotlab/pi-puck for more information on the Pi-puck.
+
+Compared to [RPi-Distro/pi-gen](https://github.com/RPi-Distro/pi-gen), this repository:
+
+* Adds a default config file for the Pi-puck build (sets the image name and enables SSH)
+* Adds an additional build stage (`stage2+pi-puck`) to set up the Pi-puck board
+* Adds packages from https://github.com/yorkrobotlab/pi-puck-packages
+* Adds some additional useful packages
+* Removes unneeded build stages (specifically `stage5`)
+
+Both a "-lite" (`stage2+pi-puck`) and a "-desktop" (`stage4`) image will be built by default.
+
+
+## Pi-puck Set-up Instructions
+
+Once the image has been flashed to an SD card, edit the following files:
+
+* `pi-puck_id` - ID of the Pi-puck board, for reference
+* `e-puck_id` - ID of the base e-puck robot, for reference, and for use when programming e-puck firmware
+* `hostname` - hostname to use for the Raspberry Pi, which will be set on boot whenever this file is changed
+* `wpa_supplicant.conf` - sets up Wi-Fi on the Raspberry Pi (see https://www.raspberrypi.org/documentation/configuration/wireless/headless.md)
+
+If the hostname and Wi-Fi details are set correctly, the Raspberry Pi will be accessible over SSH at `pi@hostname.local` (password `raspberry`) with no further configuration required. Alternatively, a serial terminal is accessible on the micro-USB port of the Pi-puck board, or connect a keyboard/mouse and monitor using the Pi-puck's USB-A port and the Raspberry Pi's standard HDMI output.
+
+_Note that the Raspberry Pi will reboot **twice** when first booted from the image, once when resizing the root filesystem (which is standard) and once after setting the hostname._
 
 
 ## Dependencies
