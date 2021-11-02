@@ -4,15 +4,18 @@ IMG_FILE="${STAGE_WORK_DIR}/${IMG_FILENAME}${IMG_SUFFIX}.img"
 INFO_FILE="${STAGE_WORK_DIR}/${IMG_FILENAME}${IMG_SUFFIX}.info"
 
 on_chroot << EOF
-/etc/init.d/fake-hwclock stop
-hardlink -t /usr/share/doc
+if [ -x /etc/init.d/fake-hwclock ]; then
+	/etc/init.d/fake-hwclock stop
+fi
+if hash hardlink 2>/dev/null; then
+	hardlink -t /usr/share/doc
+fi
 EOF
 
 if [ -d "${ROOTFS_DIR}/home/${FIRST_USER_NAME}/.config" ]; then
 	chmod 700 "${ROOTFS_DIR}/home/${FIRST_USER_NAME}/.config"
 fi
 
-rm -f "${ROOTFS_DIR}/etc/apt/apt.conf.d/51cache"
 rm -f "${ROOTFS_DIR}/usr/bin/qemu-arm-static"
 
 if [ "${USE_QEMU}" != "1" ]; then
@@ -73,17 +76,24 @@ cp "$ROOTFS_DIR/etc/rpi-issue" "$INFO_FILE"
 	dpkg -l --root "$ROOTFS_DIR"
 } >> "$INFO_FILE"
 
-ROOT_DEV="$(mount | grep "${ROOTFS_DIR} " | cut -f1 -d' ')"
-
-unmount "${ROOTFS_DIR}"
-zerofree "${ROOT_DEV}"
-
-unmount_image "${IMG_FILE}"
-
 mkdir -p "${DEPLOY_DIR}"
 
 rm -f "${DEPLOY_DIR}/${ZIP_FILENAME}${IMG_SUFFIX}.zip"
 rm -f "${DEPLOY_DIR}/${IMG_FILENAME}${IMG_SUFFIX}.img"
+
+mv "$INFO_FILE" "$DEPLOY_DIR/"
+
+if [ "${USE_QCOW2}" = "0" ] && [ "${NO_PRERUN_QCOW2}" = "0" ]; then
+	ROOT_DEV="$(mount | grep "${ROOTFS_DIR} " | cut -f1 -d' ')"
+
+	unmount "${ROOTFS_DIR}"
+	zerofree "${ROOT_DEV}"
+
+	unmount_image "${IMG_FILE}"
+else
+	unload_qimage
+	make_bootable_image "${STAGE_WORK_DIR}/${IMG_FILENAME}${IMG_SUFFIX}.qcow2" "$IMG_FILE"
+fi
 
 if [ "${DEPLOY_ZIP}" == "1" ]; then
 	pushd "${STAGE_WORK_DIR}" > /dev/null
@@ -91,7 +101,5 @@ if [ "${DEPLOY_ZIP}" == "1" ]; then
 		"$(basename "${IMG_FILE}")"
 	popd > /dev/null
 else
-	cp "$IMG_FILE" "$DEPLOY_DIR"
+	mv "$IMG_FILE" "$DEPLOY_DIR/"
 fi
-
-cp "$INFO_FILE" "$DEPLOY_DIR"
