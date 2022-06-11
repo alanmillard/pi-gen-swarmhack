@@ -1,7 +1,4 @@
-dmxwebcam
 i2c-tools
-omxplayer
 vim git htop
 python-pip python3-pip
-libopencv-dev python3-opencv
-python-rosdep python-rosinstall-generator python-wstool python-rosinstall build-essential
+build-essential
