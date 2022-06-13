@@ -12,3 +12,4 @@ EOF
 
 install -m 644 files/pipuck_server.conf "${ROOTFS_DIR}/etc/supervisor/conf.d/"
 install -m 755 files/pipuck_server.sh "${ROOTFS_DIR}/home/pi/"
+install -m 755 files/pipuck_server.py "${ROOTFS_DIR}/home/pi/"
